@@ -227,6 +227,52 @@ Timeline:
 
 ---
 
+## 🎨 UI Design
+
+### Design Documents
+
+| Component | Design Doc | Status |
+|-----------|------------|--------|
+| Canvas Workspace | [docs/design/canvas-workspace.md](design/canvas-workspace.md) | ✅ Complete |
+| Layers Panel | TBD | Pending |
+| Properties Panel | TBD | Pending |
+| Timeline | TBD | Pending |
+| Toolbar | TBD | Pending |
+
+### Editor Theme
+
+**Dark theme** optimized for long editing sessions (like After Effects, Figma, Rive).
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--editor-bg` | `#0a0a0a` | Main background |
+| `--editor-surface` | `#141414` | Panels, controls |
+| `--editor-border` | `#262626` | Panel borders |
+| `--editor-text` | `#fafafa` | Primary text |
+| `--editor-text-muted` | `#a1a1aa` | Secondary text |
+| `--editor-accent` | `#3b82f6` | Selection, focus |
+| `--work-area-bg` | `#ffffff` | Canvas work area |
+
+### Layout Structure
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Toolbar (48px)                                               │
+├────────────┬────────────────────────────────────┬───────────┤
+│            │                                    │           │
+│  Layers    │        Canvas Workspace            │ Properties│
+│  Panel     │    ┌──────────────────────┐        │  Panel    │
+│  (240px)   │    │   Work Area          │        │  (280px)  │
+│            │    │   512 × 512          │        │           │
+│            │    └──────────────────────┘        │           │
+│            │                                    │           │
+├────────────┴────────────────────────────────────┴───────────┤
+│ Timeline (200px)                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## 📁 Project Structure
 
 ```
@@ -240,14 +286,19 @@ lottie-maker/
 │           └── route.ts          # AI generation endpoint
 ├── components/
 │   ├── editor/
-│   │   ├── Canvas.tsx            # Main canvas (Fabric.js)
-│   │   ├── Timeline.tsx          # Keyframe timeline
+│   │   ├── EditorLayout.tsx      # Main layout shell with panels
+│   │   ├── CanvasWorkspace.tsx   # Canvas container + zoom controls
+│   │   ├── Canvas.tsx            # Fabric.js canvas wrapper
+│   │   ├── WorkArea.tsx          # Canvas bounds visual overlay
+│   │   ├── ZoomControls.tsx      # Zoom +/- and fit button
+│   │   ├── EmptyCanvas.tsx       # Empty state guidance
+│   │   ├── Toolbar.tsx           # Tools (select, shape, etc.)
 │   │   ├── LayersPanel.tsx       # Layers list
 │   │   ├── PropertiesPanel.tsx   # Object properties
-│   │   ├── Toolbar.tsx           # Tools (select, shape, etc.)
+│   │   ├── Timeline.tsx          # Keyframe timeline
 │   │   ├── Preview.tsx           # Lottie preview
-│   │   ├── EasingEditor.tsx      # Bezier curve editor
-│   │   └── WelcomeModal.tsx      # Onboarding flow
+│   │   ├── EasingEditor.tsx      # Bezier curve editor (Phase 2)
+│   │   └── WelcomeModal.tsx      # Onboarding flow (Phase 2)
 │   ├── ui/                       # shadcn components
 │   ├── common/
 │   │   ├── Header.tsx

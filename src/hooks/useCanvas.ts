@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useCallback, useEffect } from 'react'
+import { useRef, useEffect, useCallback, MutableRefObject } from 'react'
 import type { Canvas as FabricCanvas } from 'fabric'
 import { useEditorStore } from '@/store'
 import {
@@ -14,7 +14,7 @@ import {
 } from '@/lib/canvas'
 import type { CanvasObject } from '@/types'
 
-export function useCanvas(canvasElement: HTMLCanvasElement | null) {
+export function useCanvas(canvasRef: MutableRefObject<HTMLCanvasElement | null>) {
   const fabricRef = useRef<FabricCanvas | null>(null)
   const {
     addObject,
@@ -29,6 +29,7 @@ export function useCanvas(canvasElement: HTMLCanvasElement | null) {
 
   const initialize = useCallback(
     (config?: Partial<CanvasConfig>) => {
+      const canvasElement = canvasRef.current
       if (!canvasElement || fabricRef.current) return
 
       const canvas = initializeFabricCanvas(canvasElement, config, {
@@ -70,7 +71,7 @@ export function useCanvas(canvasElement: HTMLCanvasElement | null) {
       fabricRef.current = canvas
     },
     [
-      canvasElement,
+      canvasRef,
       addObject,
       removeObject,
       updateObject,
