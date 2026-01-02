@@ -1,8 +1,9 @@
 'use client'
 
 import { useRef, useEffect, useState, useCallback } from 'react'
-import { useCanvas } from '@/hooks'
+import { useCanvas, useKeyboardShortcuts } from '@/hooks'
 import { useEditorStore } from '@/store'
+import type { Tool } from '@/types'
 
 interface CanvasProps {
   width?: number
@@ -15,15 +16,21 @@ export function Canvas({ width = 512, height = 512, onReady }: CanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const isInitializedRef = useRef(false)
 
-  const { initialize, getCanvas } = useCanvas(canvasRef)
+  const { initialize, addShape, getCanvas } = useCanvas(canvasRef)
+  
+  useKeyboardShortcuts({ canvas: getCanvas() })
   const zoom = useEditorStore((s) => s.zoom)
   const pan = useEditorStore((s) => s.pan)
+  const activeTool = useEditorStore((s) => s.activeTool)
+  const setActiveTool = useEditorStore((s) => s.setActiveTool)
   const setZoom = useEditorStore((s) => s.setZoom)
   const setPan = useEditorStore((s) => s.setPan)
 
   const [isPanning, setIsPanning] = useState(false)
   const [isSpaceDown, setIsSpaceDown] = useState(false)
+  const [isDrawing, setIsDrawing] = useState(false)
   const lastPanPoint = useRef<{ x: number; y: number } | null>(null)
+  const drawStartPoint = useRef<{ x: number; y: number } | null>(null)
 
   useEffect(() => {
     if (canvasRef.current && !isInitializedRef.current) {
@@ -102,11 +109,36 @@ export function Canvas({ width = 512, height = 512, onReady }: CanvasProps) {
     }
   }, [isSpaceDown])
 
+  const isDrawingTool = (tool: Tool): boolean => {
+    return tool === 'rect' || tool === 'ellipse' || tool === 'text'
+  }
+
+  const getCanvasPoint = useCallback(
+    (e: React.MouseEvent): { x: number; y: number } => {
+      const canvas = getCanvas()
+      if (!canvas || !containerRef.current) {
+        return { x: e.clientX, y: e.clientY }
+      }
+      const rect = containerRef.current.getBoundingClientRect()
+      const x = (e.clientX - rect.left - pan.x) / zoom
+      const y = (e.clientY - rect.top - pan.y) / zoom
+      return { x, y }
+    },
+    [getCanvas, pan, zoom]
+  )
+
   const handleMouseDown = (e: React.MouseEvent) => {
     if (isSpaceDown || e.button === 1) {
       setIsPanning(true)
       lastPanPoint.current = { x: e.clientX, y: e.clientY }
       e.preventDefault()
+      return
+    }
+
+    if (isDrawingTool(activeTool) && e.button === 0) {
+      const point = getCanvasPoint(e)
+      drawStartPoint.current = point
+      setIsDrawing(true)
     }
   }
 
@@ -119,25 +151,65 @@ export function Canvas({ width = 512, height = 512, onReady }: CanvasProps) {
     }
   }
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (e: React.MouseEvent) => {
     if (isPanning) {
       setIsPanning(false)
       lastPanPoint.current = null
+      return
     }
+
+    if (isDrawing && drawStartPoint.current) {
+      const endPoint = getCanvasPoint(e)
+      const startPoint = drawStartPoint.current
+
+      const left = Math.min(startPoint.x, endPoint.x)
+      const top = Math.min(startPoint.y, endPoint.y)
+      const shapeWidth = Math.abs(endPoint.x - startPoint.x)
+      const shapeHeight = Math.abs(endPoint.y - startPoint.y)
+
+      const minSize = 20
+      const finalWidth = Math.max(shapeWidth, minSize)
+      const finalHeight = Math.max(shapeHeight, minSize)
+
+      if (activeTool === 'rect') {
+        addShape('rect', { left, top, width: finalWidth, height: finalHeight })
+      } else if (activeTool === 'ellipse') {
+        addShape('ellipse', { left, top, width: finalWidth, height: finalHeight })
+      } else if (activeTool === 'text') {
+        addShape('text', { left: startPoint.x, top: startPoint.y })
+      }
+
+      setActiveTool('select')
+      setIsDrawing(false)
+      drawStartPoint.current = null
+    }
+  }
+
+  const getCursor = (): string => {
+    if (isSpaceDown) {
+      return isPanning ? 'grabbing' : 'grab'
+    }
+    if (isDrawingTool(activeTool)) {
+      return 'crosshair'
+    }
+    return 'default'
   }
 
   return (
     <div
       ref={containerRef}
       className="relative"
-      style={{
-        cursor: isSpaceDown ? (isPanning ? 'grabbing' : 'grab') : 'default',
-      }}
+      style={{ cursor: getCursor() }}
       onWheel={handleWheel}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
+      onMouseLeave={() => {
+        if (isPanning) {
+          setIsPanning(false)
+          lastPanPoint.current = null
+        }
+      }}
     >
       <canvas ref={canvasRef} />
     </div>

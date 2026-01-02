@@ -19,6 +19,7 @@ export function useKeyboardShortcuts({ canvas, onRecordAction }: UseKeyboardShor
     updateObject,
     clearSelection,
     selectObjects,
+    setActiveTool,
   } = useEditorStore()
 
   const deleteSelected = useCallback(() => {
@@ -188,12 +189,45 @@ export function useKeyboardShortcuts({ canvas, onRecordAction }: UseKeyboardShor
         case 'Escape':
           e.preventDefault()
           clearSelection()
+          setActiveTool('select')
           canvas?.discardActiveObject()
           canvas?.requestRenderAll()
           break
+
+        case 'v':
+        case 'V':
+          if (!modifierKey) {
+            e.preventDefault()
+            setActiveTool('select')
+          }
+          break
+
+        case 'r':
+        case 'R':
+          if (!modifierKey) {
+            e.preventDefault()
+            setActiveTool('rect')
+          }
+          break
+
+        case 'o':
+        case 'O':
+          if (!modifierKey) {
+            e.preventDefault()
+            setActiveTool('ellipse')
+          }
+          break
+
+        case 't':
+        case 'T':
+          if (!modifierKey) {
+            e.preventDefault()
+            setActiveTool('text')
+          }
+          break
       }
     },
-    [deleteSelected, moveSelected, duplicateSelected, selectAll, clearSelection, canvas]
+    [deleteSelected, moveSelected, duplicateSelected, selectAll, clearSelection, canvas, setActiveTool]
   )
 
   useEffect(() => {
