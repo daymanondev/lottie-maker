@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
 import { useCanvas, useKeyboardShortcuts } from '@/hooks'
 import { useEditorStore } from '@/store'
+import { EmptyCanvas } from './EmptyCanvas'
 import type { Tool } from '@/types'
 
 interface CanvasProps {
@@ -19,6 +20,7 @@ export function Canvas({ width = 512, height = 512, onReady }: CanvasProps) {
   const { initialize, addShape, getCanvas } = useCanvas(canvasRef)
   
   useKeyboardShortcuts({ canvas: getCanvas() })
+  const objects = useEditorStore((s) => s.objects)
   const zoom = useEditorStore((s) => s.zoom)
   const pan = useEditorStore((s) => s.pan)
   const activeTool = useEditorStore((s) => s.activeTool)
@@ -195,6 +197,8 @@ export function Canvas({ width = 512, height = 512, onReady }: CanvasProps) {
     return 'default'
   }
 
+  const isEmpty = objects.length === 0
+
   return (
     <div
       ref={containerRef}
@@ -212,6 +216,7 @@ export function Canvas({ width = 512, height = 512, onReady }: CanvasProps) {
       }}
     >
       <canvas ref={canvasRef} />
+      {isEmpty && <EmptyCanvas />}
     </div>
   )
 }

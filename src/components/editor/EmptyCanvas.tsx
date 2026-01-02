@@ -1,26 +1,127 @@
 'use client'
 
+import { useCallback, useState } from 'react'
 import { useEditorStore } from '@/store'
-import { Upload } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Upload, Square, Circle, Type, MousePointer2 } from 'lucide-react'
 
-export function EmptyCanvas() {
-  const objects = useEditorStore((s) => s.objects)
+interface EmptyCanvasProps {
+  onCreateShape?: (type: 'rect' | 'ellipse' | 'text') => void
+}
 
-  if (objects.length > 0) return null
+export function EmptyCanvas({ onCreateShape }: EmptyCanvasProps) {
+  const [isDragOver, setIsDragOver] = useState(false)
+  const setActiveTool = useEditorStore((s) => s.setActiveTool)
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragOver(true)
+  }, [])
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragOver(false)
+  }, [])
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragOver(false)
+    
+    const files = Array.from(e.dataTransfer.files)
+    const svgFile = files.find(f => f.type === 'image/svg+xml' || f.name.endsWith('.svg'))
+    
+    if (svgFile) {
+      console.log('SVG file dropped:', svgFile.name)
+    }
+  }, [])
+
+  const handleSelectTool = (tool: 'rect' | 'ellipse' | 'text') => {
+    setActiveTool(tool)
+    onCreateShape?.(tool)
+  }
 
   return (
-    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-dashed border-[#404040] bg-[#141414]">
-          <Upload className="h-6 w-6 text-[#a1a1aa]" />
+    <div
+      className={`
+        absolute inset-0 flex items-center justify-center
+        transition-colors duration-200
+        ${isDragOver ? 'bg-[#3b82f6]/5' : ''}
+      `}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      <div
+        className={`
+          flex flex-col items-center gap-6 rounded-xl border-2 border-dashed p-10
+          transition-all duration-200
+          ${isDragOver 
+            ? 'border-[#3b82f6] bg-[#3b82f6]/10 scale-[1.02]' 
+            : 'border-[#3f3f46] bg-[#141414]/50'
+          }
+        `}
+      >
+        <div className="flex flex-col items-center gap-2">
+          <div className={`
+            flex h-16 w-16 items-center justify-center rounded-full
+            transition-colors duration-200
+            ${isDragOver ? 'bg-[#3b82f6]/20' : 'bg-[#262626]'}
+          `}>
+            <Upload className={`h-8 w-8 ${isDragOver ? 'text-[#3b82f6]' : 'text-[#71717a]'}`} />
+          </div>
+          <h3 className="text-lg font-medium text-[#fafafa]">
+            {isDragOver ? 'Drop SVG here' : 'Start creating'}
+          </h3>
+          <p className="text-center text-sm text-[#71717a]">
+            Drop an SVG file here, or add a shape to get started
+          </p>
         </div>
-        <div className="flex flex-col gap-1">
-          <p className="text-sm font-medium text-[#fafafa]">
-            Drop SVG here or add a shape
-          </p>
-          <p className="text-xs text-[#a1a1aa]">
-            Use the toolbar above to get started
-          </p>
+
+        <div className="flex items-center gap-2">
+          <div className="h-px w-8 bg-[#3f3f46]" />
+          <span className="text-xs text-[#52525b]">or</span>
+          <div className="h-px w-8 bg-[#3f3f46]" />
+        </div>
+
+        <div className="flex flex-col items-center gap-3">
+          <p className="text-xs font-medium text-[#a1a1aa]">Add a shape</p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-10 w-10 border-[#3f3f46] bg-[#1a1a1a] hover:bg-[#262626] hover:border-[#52525b]"
+              onClick={() => handleSelectTool('rect')}
+              title="Rectangle (R)"
+            >
+              <Square className="h-4 w-4 text-[#a1a1aa]" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-10 w-10 border-[#3f3f46] bg-[#1a1a1a] hover:bg-[#262626] hover:border-[#52525b]"
+              onClick={() => handleSelectTool('ellipse')}
+              title="Ellipse (O)"
+            >
+              <Circle className="h-4 w-4 text-[#a1a1aa]" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-10 w-10 border-[#3f3f46] bg-[#1a1a1a] hover:bg-[#262626] hover:border-[#52525b]"
+              onClick={() => handleSelectTool('text')}
+              title="Text (T)"
+            >
+              <Type className="h-4 w-4 text-[#a1a1aa]" />
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 pt-2 text-xs text-[#52525b]">
+          <MousePointer2 className="h-3 w-3" />
+          <span>Click and drag on canvas to draw</span>
         </div>
       </div>
     </div>

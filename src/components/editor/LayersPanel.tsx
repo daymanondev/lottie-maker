@@ -332,9 +332,27 @@ export function LayersPanel() {
       <div className="flex-1 overflow-y-auto">
         {orderedLayers.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-8 text-center">
-            <Layers className="mb-3 h-8 w-8 text-[#3f3f46]" />
-            <p className="text-xs text-[#71717a]">No layers yet</p>
-            <p className="mt-1 text-xs text-[#52525b]">Draw a shape to get started</p>
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#262626]">
+              <Layers className="h-6 w-6 text-[#52525b]" />
+            </div>
+            <p className="text-sm font-medium text-[#a1a1aa]">No layers yet</p>
+            <p className="mt-2 max-w-[180px] text-xs text-[#52525b]">
+              Add shapes using the toolbar or drag an SVG file onto the canvas
+            </p>
+            <div className="mt-4 flex flex-col gap-1.5 text-[10px] text-[#3f3f46]">
+              <div className="flex items-center gap-2">
+                <kbd className="rounded bg-[#262626] px-1.5 py-0.5 font-mono">R</kbd>
+                <span>Rectangle</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <kbd className="rounded bg-[#262626] px-1.5 py-0.5 font-mono">O</kbd>
+                <span>Ellipse</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <kbd className="rounded bg-[#262626] px-1.5 py-0.5 font-mono">T</kbd>
+                <span>Text</span>
+              </div>
+            </div>
           </div>
         ) : (
           orderedLayers.map((layer) => (

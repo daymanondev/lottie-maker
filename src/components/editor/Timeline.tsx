@@ -68,6 +68,11 @@ function TimelineTrack({
         className="relative flex-1 cursor-pointer"
         onDoubleClick={handleDoubleClick}
       >
+        {keyframes.length === 0 && isSelected && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-[10px] text-[#3f3f46]">Double-click to add keyframe</span>
+          </div>
+        )}
         {keyframes.map((kf) => (
           <button
             key={kf.id}
@@ -481,8 +486,14 @@ export function Timeline() {
           />
 
           {orderedLayers.length === 0 ? (
-            <div className="flex h-20 items-center justify-center text-xs text-[#52525b]">
-              <span>Add shapes to see timeline tracks</span>
+            <div className="flex h-24 flex-col items-center justify-center gap-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1a1a1a]">
+                <Diamond className="h-5 w-5 text-[#3f3f46]" />
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-sm text-[#71717a]">No timeline tracks</span>
+                <span className="text-xs text-[#52525b]">Add shapes to animate them</span>
+              </div>
             </div>
           ) : (
             orderedLayers.map((layer) => (
