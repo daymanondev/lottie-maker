@@ -5,12 +5,14 @@ import {
   CanvasWorkspace,
   Canvas,
   ZoomControls,
-  EmptyCanvas,
   Toolbar,
   LayersPanel,
   PropertiesPanel,
   Timeline,
   LottiePreview,
+  CanvasErrorBoundary,
+  PreviewErrorBoundary,
+  TimelineErrorBoundary,
 } from '@/components/editor'
 
 export default function Home() {
@@ -19,13 +21,22 @@ export default function Home() {
       toolbar={<Toolbar />}
       layersPanel={<LayersPanel />}
       propertiesPanel={<PropertiesPanel />}
-      previewPanel={<LottiePreview />}
-      timeline={<Timeline />}
+      previewPanel={
+        <PreviewErrorBoundary>
+          <LottiePreview />
+        </PreviewErrorBoundary>
+      }
+      timeline={
+        <TimelineErrorBoundary>
+          <Timeline />
+        </TimelineErrorBoundary>
+      }
     >
-      <CanvasWorkspace zoomControls={<ZoomControls />}>
-        <Canvas />
-        <EmptyCanvas />
-      </CanvasWorkspace>
+      <CanvasErrorBoundary>
+        <CanvasWorkspace zoomControls={<ZoomControls />}>
+          <Canvas />
+        </CanvasWorkspace>
+      </CanvasErrorBoundary>
     </EditorLayout>
   )
 }
