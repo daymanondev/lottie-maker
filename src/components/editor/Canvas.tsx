@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
 import { useCanvas, useKeyboardShortcuts } from '@/hooks'
 import { useEditorStore } from '@/store'
+import { useCanvasContext } from '@/contexts'
 import { EmptyCanvas } from './EmptyCanvas'
 import type { Tool } from '@/types'
 
@@ -18,6 +19,7 @@ export function Canvas({ width = 512, height = 512, onReady }: CanvasProps) {
   const isInitializedRef = useRef(false)
 
   const { initialize, addShape, getCanvas } = useCanvas(canvasRef)
+  const { setCanvas } = useCanvasContext()
   
   useKeyboardShortcuts({ canvas: getCanvas() })
   const objects = useEditorStore((s) => s.objects)
@@ -44,9 +46,10 @@ export function Canvas({ width = 512, height = 512, onReady }: CanvasProps) {
         preserveObjectStacking: true,
       })
       isInitializedRef.current = true
+      setCanvas(getCanvas())
       onReady?.()
     }
-  }, [initialize, width, height, onReady])
+  }, [initialize, width, height, onReady, setCanvas, getCanvas])
 
   useEffect(() => {
     const canvas = getCanvas()

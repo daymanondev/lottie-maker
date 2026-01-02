@@ -12,6 +12,7 @@ import {
   type CanvasConfig,
   type FabricObjectType,
 } from '@/lib/canvas'
+import { importSVGString, importSVGFile, type SVGImportResult, type SVGImportOptions } from '@/lib/svg'
 import type { CanvasObject } from '@/types'
 
 export function useCanvas(canvasRef: MutableRefObject<HTMLCanvasElement | null>) {
@@ -110,6 +111,29 @@ export function useCanvas(canvasRef: MutableRefObject<HTMLCanvasElement | null>)
 
   const getCanvas = useCallback(() => fabricRef.current, [])
 
+  const importSVG = useCallback(
+    async (input: string | File, options?: SVGImportOptions): Promise<SVGImportResult> => {
+      const result =
+        typeof input === 'string'
+          ? await importSVGString(input, options)
+          : await importSVGFile(input, options)
+
+      if (result.success && fabricRef.current) {
+        for (const obj of result.objects) {
+          fabricRef.current.add(obj)
+        }
+        fabricRef.current.requestRenderAll()
+
+        if (result.objects.length > 0) {
+          fabricRef.current.setActiveObject(result.objects[0])
+        }
+      }
+
+      return result
+    },
+    []
+  )
+
   useEffect(() => {
     return () => {
       if (fabricRef.current) {
@@ -124,5 +148,6 @@ export function useCanvas(canvasRef: MutableRefObject<HTMLCanvasElement | null>)
     addShape,
     removeSelected,
     getCanvas,
+    importSVG,
   }
 }

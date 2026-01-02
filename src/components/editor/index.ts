@@ -9,6 +9,7 @@ export { LayersPanel } from './LayersPanel'
 export { PropertiesPanel } from './PropertiesPanel'
 export { Timeline } from './Timeline'
 export { LottiePreview } from './LottiePreview'
+export { SVGImport } from './SVGImport'
 export {
   ErrorBoundary,
   CanvasErrorBoundary,

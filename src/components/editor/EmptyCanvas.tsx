@@ -2,8 +2,9 @@
 
 import { useCallback, useState } from 'react'
 import { useEditorStore } from '@/store'
+import { useCanvasContext } from '@/contexts'
 import { Button } from '@/components/ui/button'
-import { Upload, Square, Circle, Type, MousePointer2 } from 'lucide-react'
+import { Upload, Square, Circle, Type, MousePointer2, Loader2 } from 'lucide-react'
 
 interface EmptyCanvasProps {
   onCreateShape?: (type: 'rect' | 'ellipse' | 'text') => void
@@ -11,7 +12,9 @@ interface EmptyCanvasProps {
 
 export function EmptyCanvas({ onCreateShape }: EmptyCanvasProps) {
   const [isDragOver, setIsDragOver] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
   const setActiveTool = useEditorStore((s) => s.setActiveTool)
+  const { importSVG } = useCanvasContext()
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -25,6 +28,15 @@ export function EmptyCanvas({ onCreateShape }: EmptyCanvasProps) {
     setIsDragOver(false)
   }, [])
 
+  const handleImportFile = useCallback(async (file: File) => {
+    setIsImporting(true)
+    try {
+      await importSVG(file)
+    } finally {
+      setIsImporting(false)
+    }
+  }, [importSVG])
+
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -34,9 +46,9 @@ export function EmptyCanvas({ onCreateShape }: EmptyCanvasProps) {
     const svgFile = files.find(f => f.type === 'image/svg+xml' || f.name.endsWith('.svg'))
     
     if (svgFile) {
-      console.log('SVG file dropped:', svgFile.name)
+      handleImportFile(svgFile)
     }
-  }, [])
+  }, [handleImportFile])
 
   const handleSelectTool = (tool: 'rect' | 'ellipse' | 'text') => {
     setActiveTool(tool)
@@ -70,10 +82,14 @@ export function EmptyCanvas({ onCreateShape }: EmptyCanvasProps) {
             transition-colors duration-200
             ${isDragOver ? 'bg-[#3b82f6]/20' : 'bg-[#262626]'}
           `}>
-            <Upload className={`h-8 w-8 ${isDragOver ? 'text-[#3b82f6]' : 'text-[#71717a]'}`} />
+            {isImporting ? (
+              <Loader2 className="h-8 w-8 animate-spin text-[#3b82f6]" />
+            ) : (
+              <Upload className={`h-8 w-8 ${isDragOver ? 'text-[#3b82f6]' : 'text-[#71717a]'}`} />
+            )}
           </div>
           <h3 className="text-lg font-medium text-[#fafafa]">
-            {isDragOver ? 'Drop SVG here' : 'Start creating'}
+            {isImporting ? 'Importing...' : isDragOver ? 'Drop SVG here' : 'Start creating'}
           </h3>
           <p className="text-center text-sm text-[#71717a]">
             Drop an SVG file here, or add a shape to get started
