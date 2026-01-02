@@ -3,24 +3,28 @@
 import { useCallback, useState } from 'react'
 import { useEditorStore } from '@/store'
 import { getAllRegisteredObjects, getRegisteredObject } from '@/lib/canvas'
+import { validateLottie, formatValidationErrors, type ValidationResult } from '@/lib/lottie'
 import type { LottieAnimation, LottieLayer, LottieShape, LottieKeyframe, Keyframe } from '@/types'
 
-interface ExportOptions {
+export interface ExportOptions {
   name?: string
   width?: number
   height?: number
+  validate?: boolean
 }
 
-interface ExportResult {
+export interface ExportResult {
   success: boolean
   json?: LottieAnimation
   error?: string
+  validation?: ValidationResult
 }
 
 export function useLottieExport() {
   const { duration, frameRate, keyframes } = useEditorStore()
   const [isExporting, setIsExporting] = useState(false)
   const [lastExportError, setLastExportError] = useState<string | null>(null)
+  const [lastValidation, setLastValidation] = useState<ValidationResult | null>(null)
 
   const generateLottieJson = useCallback(
     (options: ExportOptions = {}): LottieAnimation => {
@@ -84,16 +88,29 @@ export function useLottieExport() {
         layers,
       }
     },
-        [duration, frameRate, keyframes]
+    [duration, frameRate, keyframes]
   )
 
   const exportToJson = useCallback(
     async (options: ExportOptions = {}): Promise<ExportResult> => {
       setIsExporting(true)
       setLastExportError(null)
+      setLastValidation(null)
 
       try {
         const json = generateLottieJson(options)
+
+        if (options.validate !== false) {
+          const validation = validateLottie(json)
+          setLastValidation(validation)
+
+          if (!validation.valid) {
+            const errorMessage = formatValidationErrors(validation.errors)
+            setLastExportError(errorMessage)
+            return { success: false, json, error: errorMessage, validation }
+          }
+        }
+
         return { success: true, json }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Export failed'
@@ -120,7 +137,7 @@ export function useLottieExport() {
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = filename
+      link.download = filename.endsWith('.json') ? filename : `${filename}.json`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -131,12 +148,32 @@ export function useLottieExport() {
     [exportToJson]
   )
 
+  const copyToClipboard = useCallback(
+    async (options: ExportOptions = {}): Promise<boolean> => {
+      const result = await exportToJson(options)
+
+      if (!result.success || !result.json) {
+        return false
+      }
+
+      try {
+        await navigator.clipboard.writeText(JSON.stringify(result.json, null, 2))
+        return true
+      } catch {
+        return false
+      }
+    },
+    [exportToJson]
+  )
+
   return {
     isExporting,
     lastExportError,
+    lastValidation,
     generateLottieJson,
     exportToJson,
     downloadJson,
+    copyToClipboard,
   }
 }
 
