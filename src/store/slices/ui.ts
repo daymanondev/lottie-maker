@@ -20,6 +20,7 @@ const defaultPanels: EditorPanel = {
   layers: true,
   properties: true,
   timeline: true,
+  preview: true,
 }
 
 export const createUISlice: StateCreator<EditorStore, [], [], UISlice> = (set) => ({

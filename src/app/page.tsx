@@ -10,6 +10,7 @@ import {
   LayersPanel,
   PropertiesPanel,
   Timeline,
+  LottiePreview,
 } from '@/components/editor'
 
 export default function Home() {
@@ -18,6 +19,7 @@ export default function Home() {
       toolbar={<Toolbar />}
       layersPanel={<LayersPanel />}
       propertiesPanel={<PropertiesPanel />}
+      previewPanel={<LottiePreview />}
       timeline={<Timeline />}
     >
       <CanvasWorkspace zoomControls={<ZoomControls />}>

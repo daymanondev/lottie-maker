@@ -7,6 +7,7 @@ interface EditorLayoutProps {
   toolbar?: ReactNode
   layersPanel?: ReactNode
   propertiesPanel?: ReactNode
+  previewPanel?: ReactNode
   timeline?: ReactNode
   children: ReactNode
 }
@@ -15,6 +16,7 @@ export function EditorLayout({
   toolbar,
   layersPanel,
   propertiesPanel,
+  previewPanel,
   timeline,
   children,
 }: EditorLayoutProps) {
@@ -41,12 +43,22 @@ export function EditorLayout({
         {/* Canvas Workspace */}
         <main className="relative flex-1 overflow-hidden">{children}</main>
 
-        {/* Properties Panel */}
-        {panels.properties && propertiesPanel && (
-          <aside className="flex w-[280px] shrink-0 flex-col border-l border-[#262626] bg-[#141414]">
-            {propertiesPanel}
-          </aside>
-        )}
+        {/* Right sidebar: Preview + Properties */}
+        <aside className="flex w-[280px] shrink-0 flex-col border-l border-[#262626] bg-[#141414]">
+          {/* Preview Panel */}
+          {panels.preview && previewPanel && (
+            <div className="shrink-0 border-b border-[#262626]">
+              {previewPanel}
+            </div>
+          )}
+
+          {/* Properties Panel */}
+          {panels.properties && propertiesPanel && (
+            <div className="flex flex-1 flex-col overflow-hidden">
+              {propertiesPanel}
+            </div>
+          )}
+        </aside>
       </div>
 
       {/* Timeline */}

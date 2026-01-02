@@ -4,6 +4,7 @@ export interface EditorPanel {
   layers: boolean
   properties: boolean
   timeline: boolean
+  preview: boolean
 }
 
 export interface Keyframe {

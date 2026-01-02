@@ -5,7 +5,7 @@ describe('UI Slice', () => {
   beforeEach(() => {
     useEditorStore.setState({
       activeTool: 'select',
-      panels: { layers: true, properties: true, timeline: true },
+      panels: { layers: true, properties: true, timeline: true, preview: true },
       isWelcomeModalOpen: true,
       isExporting: false,
     })
@@ -30,7 +30,7 @@ describe('UI Slice', () => {
 
   describe('setPanelOpen', () => {
     it('sets panel to open', () => {
-      useEditorStore.setState({ panels: { layers: false, properties: true, timeline: true } })
+      useEditorStore.setState({ panels: { layers: false, properties: true, timeline: true, preview: true } })
       useEditorStore.getState().setPanelOpen('layers', true)
       expect(useEditorStore.getState().panels.layers).toBe(true)
     })
@@ -59,7 +59,7 @@ describe('UI Slice', () => {
     it('resets UI to default state', () => {
       useEditorStore.setState({
         activeTool: 'ellipse',
-        panels: { layers: false, properties: false, timeline: false },
+        panels: { layers: false, properties: false, timeline: false, preview: false },
         isWelcomeModalOpen: true,
         isExporting: true,
       })
@@ -68,7 +68,7 @@ describe('UI Slice', () => {
 
       const state = useEditorStore.getState()
       expect(state.activeTool).toBe('select')
-      expect(state.panels).toEqual({ layers: true, properties: true, timeline: true })
+      expect(state.panels).toEqual({ layers: true, properties: true, timeline: true, preview: true })
       expect(state.isWelcomeModalOpen).toBe(false)
       expect(state.isExporting).toBe(false)
     })
