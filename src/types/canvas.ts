@@ -4,6 +4,14 @@ export interface CanvasObject {
   type: 'rect' | 'ellipse' | 'path' | 'text' | 'group'
   visible: boolean
   locked: boolean
+  left?: number
+  top?: number
+  width?: number
+  height?: number
+  scaleX?: number
+  scaleY?: number
+  angle?: number
+  opacity?: number
 }
 
 export interface CanvasState {
