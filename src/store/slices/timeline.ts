@@ -22,6 +22,7 @@ export interface TimelineSlice {
   updateKeyframe: (id: string, updates: Partial<Keyframe>) => void
   getKeyframesForObject: (objectId: string) => Keyframe[]
   getKeyframesAtFrame: (frame: number) => Keyframe[]
+  setKeyframes: (keyframes: Keyframe[]) => void
   clearKeyframes: () => void
 }
 
@@ -88,6 +89,8 @@ export const createTimelineSlice: StateCreator<EditorStore, [], [], TimelineSlic
   getKeyframesAtFrame: (frame) => {
     return get().keyframes.filter((kf) => kf.frame === frame)
   },
+
+  setKeyframes: (keyframes) => set({ keyframes }),
 
   clearKeyframes: () => set({ keyframes: [] }),
 })
