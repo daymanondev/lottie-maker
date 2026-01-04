@@ -45,4 +45,18 @@ export interface LottieShape {
   ty: string
   nm: string
   it?: LottieShape[]
+  c?: LottieColorValue
+  s?: LottieColorValue
+}
+
+export interface LottieColorValue {
+  a: 0 | 1
+  k: number[] | LottieColorKeyframe[]
+}
+
+export interface LottieColorKeyframe {
+  t: number
+  s: number[]
+  i?: { x: number; y: number }
+  o?: { x: number; y: number }
 }

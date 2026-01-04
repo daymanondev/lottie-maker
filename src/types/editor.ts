@@ -7,12 +7,22 @@ export interface EditorPanel {
   preview: boolean
 }
 
+export type KeyframeProperty =
+  | 'position'
+  | 'scale'
+  | 'rotation'
+  | 'opacity'
+  | 'fill'
+  | 'stroke'
+
+export type KeyframeValue = number | number[] | string
+
 export interface Keyframe {
   id: string
   objectId: string
   frame: number
-  property: 'position' | 'scale' | 'rotation' | 'opacity'
-  value: number | number[]
+  property: KeyframeProperty
+  value: KeyframeValue
   easing: {
     type: 'linear' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'bezier'
     bezier?: { x1: number; y1: number; x2: number; y2: number }
