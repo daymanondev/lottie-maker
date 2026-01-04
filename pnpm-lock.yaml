@@ -38,6 +38,9 @@ importers:
       ajv:
         specifier: ^8.17.1
         version: 8.17.1
+      bezier-easing:
+        specifier: ^2.1.0
+        version: 2.1.0
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -87,6 +90,9 @@ importers:
       '@testing-library/react':
         specifier: ^16.3.1
         version: 16.3.1(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@types/bezier-easing':
+        specifier: ^2.1.6
+        version: 2.1.6
       '@types/fabric':
         specifier: ^5.3.10
         version: 5.3.10
@@ -1400,6 +1406,10 @@ packages:
   '@types/babel__traverse@7.28.0':
     resolution: {integrity: sha512-8PvcXf70gTDZBgt9ptxJ8elBeBjcLOAcOtoO/mPJjtji1+CdGbHgm77om1GrsPxsiE+uXIpNSK64UYaIwQXd4Q==}
 
+  '@types/bezier-easing@2.1.6':
+    resolution: {integrity: sha512-ntD54njPbI4ZUe+Fh+o2ezwqVsOkS61QQdBP2a8hIRhr2m33bkD4GpTPsyJlFg+bB4gG69FVKgKqm+8KKZ00WA==}
+    deprecated: This is a stub types definition. bezier-easing provides its own type definitions, so you do not need this installed.
+
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
 
@@ -1734,6 +1744,9 @@ packages:
   baseline-browser-mapping@2.9.11:
     resolution: {integrity: sha512-Sg0xJUNDU1sJNGdfGWhVHX0kkZ+HWcvmVymJbj6NSgZZmW/8S9Y2HQ5euytnIgakgxN6papOAWiwDo1ctFDcoQ==}
     hasBin: true
+
+  bezier-easing@2.1.0:
+    resolution: {integrity: sha512-gbIqZ/eslnUFC1tjEvtz0sgx+xTK20wDnYMIA27VA04R7w6xxXQPZDbibjA9DTWZRA2CXtwHykkVzlCaAJAZig==}
 
   bidi-js@1.0.3:
     resolution: {integrity: sha512-RKshQI1R3YQ+n9YJz2QQ147P66ELpa1FQEg20Dk8oW9t2KgLbpDLLp9aGZ7y8WHSshDknG0bknqGw5/tyCs5tw==}
@@ -4685,6 +4698,10 @@ snapshots:
     dependencies:
       '@babel/types': 7.28.5
 
+  '@types/bezier-easing@2.1.6':
+    dependencies:
+      bezier-easing: 2.1.0
+
   '@types/chai@5.2.3':
     dependencies:
       '@types/deep-eql': 4.0.2
@@ -5048,6 +5065,8 @@ snapshots:
     optional: true
 
   baseline-browser-mapping@2.9.11: {}
+
+  bezier-easing@2.1.0: {}
 
   bidi-js@1.0.3:
     dependencies:

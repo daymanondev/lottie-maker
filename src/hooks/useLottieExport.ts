@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react'
 import { useEditorStore } from '@/store'
 import { getAllRegisteredObjects, getRegisteredObject } from '@/lib/canvas'
 import { validateLottie, formatValidationErrors, type ValidationResult } from '@/lib/lottie'
+import { getEasingHandles } from '@/lib/animation'
 import type { LottieAnimation, LottieLayer, LottieShape, LottieKeyframe, Keyframe } from '@/types'
 
 export interface ExportOptions {
@@ -187,15 +188,17 @@ function buildKeyframeArray(
   return sorted.map((kf, index) => {
     const isLast = index === sorted.length - 1
     const value = Array.isArray(kf.value) ? kf.value : [kf.value]
+
+    if (isLast) {
+      return { t: kf.frame, s: value }
+    }
+
+    const handles = getEasingHandles(kf.easing)
     return {
       t: kf.frame,
       s: value,
-      ...(isLast
-        ? {}
-        : {
-            o: { x: 0.5, y: 0 },
-            i: { x: 0.5, y: 1 },
-          }),
+      o: handles.o,
+      i: handles.i,
     }
   })
 }
