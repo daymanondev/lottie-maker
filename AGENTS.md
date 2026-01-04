@@ -20,3 +20,21 @@
 ## Task Tracking
 - Issues in `.beads/issues.jsonl` | Skills in `.agents/skills/`
 - Close tasks after quality gate passes
+
+## Skills
+
+Load skills based on task type:
+
+| Task | Skill | Load |
+|------|-------|------|
+| Plan new feature/epic | `planning` | Discovery → Spikes → Track Planning |
+| Execute beads tasks | `beads-workflow` | bd commands, quality gates, Party Mode |
+| Canvas/Fabric.js work | `fabric-canvas` | Shapes, transforms, events |
+| Git commits/branches | `git-workflow` | Conventional commits, PRs |
+| UI components | `frontend-design` | Styling, shadcn/ui patterns |
+| Write tests | `unit-testing` | Vitest, React Testing Library |
+
+### Workflow
+1. **New epic?** → Load `planning` skill first
+2. **Execute tasks?** → Load `beads-workflow` skill
+3. **Specific domain?** → Load skill from bead labels (e.g., `skill:fabric-canvas`)
