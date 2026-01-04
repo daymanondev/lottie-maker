@@ -10,6 +10,7 @@ export { PropertiesPanel } from './PropertiesPanel'
 export { Timeline } from './Timeline'
 export { LottiePreview } from './LottiePreview'
 export { SVGImport } from './SVGImport'
+export { EasingEditor } from './EasingEditor'
 export {
   ErrorBoundary,
   CanvasErrorBoundary,
