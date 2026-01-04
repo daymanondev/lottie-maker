@@ -2,12 +2,19 @@ import type { StateCreator } from 'zustand'
 import type { Keyframe } from '@/types'
 import type { EditorStore } from '../types'
 
+export interface KeyframeClipboard {
+  keyframes: Omit<Keyframe, 'id'>[]
+  sourceFrame: number
+}
+
 export interface TimelineSlice {
   currentFrame: number
   duration: number
   frameRate: number
   isPlaying: boolean
   keyframes: Keyframe[]
+  selectedKeyframeIds: string[]
+  clipboard: KeyframeClipboard | null
 
   setCurrentFrame: (frame: number) => void
   setDuration: (duration: number) => void
@@ -24,6 +31,18 @@ export interface TimelineSlice {
   getKeyframesAtFrame: (frame: number) => Keyframe[]
   setKeyframes: (keyframes: Keyframe[]) => void
   clearKeyframes: () => void
+
+  selectKeyframe: (id: string, addToSelection?: boolean) => void
+  deselectKeyframe: (id: string) => void
+  selectAllKeyframesAtFrame: (frame: number) => void
+  clearKeyframeSelection: () => void
+  copySelectedKeyframes: () => void
+  pasteKeyframes: (targetObjectId?: string) => void
+  deleteSelectedKeyframes: () => void
+}
+
+function generateId(): string {
+  return `kf-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 }
 
 export const createTimelineSlice: StateCreator<EditorStore, [], [], TimelineSlice> = (set, get) => ({
@@ -32,6 +51,8 @@ export const createTimelineSlice: StateCreator<EditorStore, [], [], TimelineSlic
   frameRate: 30,
   isPlaying: false,
   keyframes: [],
+  selectedKeyframeIds: [],
+  clipboard: null,
 
   setCurrentFrame: (frame) =>
     set({ currentFrame: Math.max(0, Math.min(frame, get().duration)) }),
@@ -73,6 +94,7 @@ export const createTimelineSlice: StateCreator<EditorStore, [], [], TimelineSlic
   removeKeyframe: (id) =>
     set((state) => ({
       keyframes: state.keyframes.filter((kf) => kf.id !== id),
+      selectedKeyframeIds: state.selectedKeyframeIds.filter((kfId) => kfId !== id),
     })),
 
   updateKeyframe: (id, updates) =>
@@ -92,5 +114,84 @@ export const createTimelineSlice: StateCreator<EditorStore, [], [], TimelineSlic
 
   setKeyframes: (keyframes) => set({ keyframes }),
 
-  clearKeyframes: () => set({ keyframes: [] }),
+  clearKeyframes: () => set({ keyframes: [], selectedKeyframeIds: [] }),
+
+  selectKeyframe: (id, addToSelection = false) =>
+    set((state) => {
+      if (addToSelection) {
+        if (state.selectedKeyframeIds.includes(id)) {
+          return state
+        }
+        return { selectedKeyframeIds: [...state.selectedKeyframeIds, id] }
+      }
+      return { selectedKeyframeIds: [id] }
+    }),
+
+  deselectKeyframe: (id) =>
+    set((state) => ({
+      selectedKeyframeIds: state.selectedKeyframeIds.filter((kfId) => kfId !== id),
+    })),
+
+  selectAllKeyframesAtFrame: (frame) =>
+    set((state) => {
+      const idsAtFrame = state.keyframes
+        .filter((kf) => kf.frame === frame)
+        .map((kf) => kf.id)
+      return { selectedKeyframeIds: idsAtFrame }
+    }),
+
+  clearKeyframeSelection: () => set({ selectedKeyframeIds: [] }),
+
+  copySelectedKeyframes: () =>
+    set((state) => {
+      const selected = state.keyframes.filter((kf) =>
+        state.selectedKeyframeIds.includes(kf.id)
+      )
+      if (selected.length === 0) {
+        return state
+      }
+
+      const minFrame = Math.min(...selected.map((kf) => kf.frame))
+      const keyframesToCopy: Omit<Keyframe, 'id'>[] = selected.map(
+        ({ id: _, ...rest }) => rest
+      )
+
+      return {
+        clipboard: {
+          keyframes: keyframesToCopy,
+          sourceFrame: minFrame,
+        },
+      }
+    }),
+
+  pasteKeyframes: (targetObjectId) =>
+    set((state) => {
+      const { clipboard, currentFrame, keyframes } = state
+      if (!clipboard || clipboard.keyframes.length === 0) {
+        return state
+      }
+
+      const frameOffset = currentFrame - clipboard.sourceFrame
+      const newKeyframes: Keyframe[] = clipboard.keyframes.map((kf) => ({
+        ...kf,
+        id: generateId(),
+        frame: kf.frame + frameOffset,
+        objectId: targetObjectId ?? kf.objectId,
+      }))
+
+      const newKeyframeIds = newKeyframes.map((kf) => kf.id)
+
+      return {
+        keyframes: [...keyframes, ...newKeyframes],
+        selectedKeyframeIds: newKeyframeIds,
+      }
+    }),
+
+  deleteSelectedKeyframes: () =>
+    set((state) => ({
+      keyframes: state.keyframes.filter(
+        (kf) => !state.selectedKeyframeIds.includes(kf.id)
+      ),
+      selectedKeyframeIds: [],
+    })),
 })

@@ -20,6 +20,8 @@ describe('Timeline Slice', () => {
       frameRate: 30,
       isPlaying: false,
       keyframes: [],
+      selectedKeyframeIds: [],
+      clipboard: null,
     })
   })
 
@@ -193,6 +195,246 @@ describe('Timeline Slice', () => {
       useEditorStore.getState().clearKeyframes()
 
       expect(useEditorStore.getState().keyframes).toHaveLength(0)
+    })
+
+    it('clearKeyframes also clears selection', () => {
+      useEditorStore.setState({
+        keyframes: [createMockKeyframe({ id: 'kf-1' })],
+        selectedKeyframeIds: ['kf-1'],
+      })
+
+      useEditorStore.getState().clearKeyframes()
+
+      expect(useEditorStore.getState().selectedKeyframeIds).toHaveLength(0)
+    })
+  })
+
+  describe('keyframe selection', () => {
+    it('selectKeyframe selects a single keyframe', () => {
+      useEditorStore.setState({
+        keyframes: [createMockKeyframe({ id: 'kf-1' })],
+      })
+
+      useEditorStore.getState().selectKeyframe('kf-1')
+
+      expect(useEditorStore.getState().selectedKeyframeIds).toEqual(['kf-1'])
+    })
+
+    it('selectKeyframe replaces selection by default', () => {
+      useEditorStore.setState({
+        keyframes: [
+          createMockKeyframe({ id: 'kf-1' }),
+          createMockKeyframe({ id: 'kf-2' }),
+        ],
+        selectedKeyframeIds: ['kf-1'],
+      })
+
+      useEditorStore.getState().selectKeyframe('kf-2')
+
+      expect(useEditorStore.getState().selectedKeyframeIds).toEqual(['kf-2'])
+    })
+
+    it('selectKeyframe adds to selection when addToSelection is true', () => {
+      useEditorStore.setState({
+        keyframes: [
+          createMockKeyframe({ id: 'kf-1' }),
+          createMockKeyframe({ id: 'kf-2' }),
+        ],
+        selectedKeyframeIds: ['kf-1'],
+      })
+
+      useEditorStore.getState().selectKeyframe('kf-2', true)
+
+      expect(useEditorStore.getState().selectedKeyframeIds).toEqual(['kf-1', 'kf-2'])
+    })
+
+    it('selectKeyframe does not duplicate when adding already selected', () => {
+      useEditorStore.setState({
+        keyframes: [createMockKeyframe({ id: 'kf-1' })],
+        selectedKeyframeIds: ['kf-1'],
+      })
+
+      useEditorStore.getState().selectKeyframe('kf-1', true)
+
+      expect(useEditorStore.getState().selectedKeyframeIds).toEqual(['kf-1'])
+    })
+
+    it('deselectKeyframe removes from selection', () => {
+      useEditorStore.setState({
+        keyframes: [
+          createMockKeyframe({ id: 'kf-1' }),
+          createMockKeyframe({ id: 'kf-2' }),
+        ],
+        selectedKeyframeIds: ['kf-1', 'kf-2'],
+      })
+
+      useEditorStore.getState().deselectKeyframe('kf-1')
+
+      expect(useEditorStore.getState().selectedKeyframeIds).toEqual(['kf-2'])
+    })
+
+    it('selectAllKeyframesAtFrame selects all keyframes at frame', () => {
+      useEditorStore.setState({
+        keyframes: [
+          createMockKeyframe({ id: 'kf-1', frame: 0 }),
+          createMockKeyframe({ id: 'kf-2', frame: 15 }),
+          createMockKeyframe({ id: 'kf-3', frame: 0, objectId: 'obj-2' }),
+        ],
+      })
+
+      useEditorStore.getState().selectAllKeyframesAtFrame(0)
+
+      expect(useEditorStore.getState().selectedKeyframeIds).toEqual(['kf-1', 'kf-3'])
+    })
+
+    it('clearKeyframeSelection clears selection', () => {
+      useEditorStore.setState({
+        selectedKeyframeIds: ['kf-1', 'kf-2'],
+      })
+
+      useEditorStore.getState().clearKeyframeSelection()
+
+      expect(useEditorStore.getState().selectedKeyframeIds).toEqual([])
+    })
+
+    it('removeKeyframe also removes from selection', () => {
+      useEditorStore.setState({
+        keyframes: [createMockKeyframe({ id: 'kf-1' })],
+        selectedKeyframeIds: ['kf-1'],
+      })
+
+      useEditorStore.getState().removeKeyframe('kf-1')
+
+      expect(useEditorStore.getState().selectedKeyframeIds).toEqual([])
+    })
+  })
+
+  describe('copy/paste keyframes', () => {
+    it('copySelectedKeyframes copies selected keyframes to clipboard', () => {
+      useEditorStore.setState({
+        keyframes: [
+          createMockKeyframe({ id: 'kf-1', frame: 10, objectId: 'obj-1' }),
+          createMockKeyframe({ id: 'kf-2', frame: 20, objectId: 'obj-1' }),
+        ],
+        selectedKeyframeIds: ['kf-1', 'kf-2'],
+      })
+
+      useEditorStore.getState().copySelectedKeyframes()
+
+      const clipboard = useEditorStore.getState().clipboard
+      expect(clipboard).not.toBeNull()
+      expect(clipboard?.keyframes).toHaveLength(2)
+      expect(clipboard?.sourceFrame).toBe(10)
+    })
+
+    it('copySelectedKeyframes does nothing with empty selection', () => {
+      useEditorStore.setState({
+        keyframes: [createMockKeyframe({ id: 'kf-1' })],
+        selectedKeyframeIds: [],
+      })
+
+      useEditorStore.getState().copySelectedKeyframes()
+
+      expect(useEditorStore.getState().clipboard).toBeNull()
+    })
+
+    it('pasteKeyframes pastes at current frame with offset', () => {
+      useEditorStore.setState({
+        keyframes: [createMockKeyframe({ id: 'kf-1', frame: 10 })],
+        selectedKeyframeIds: ['kf-1'],
+        currentFrame: 30,
+      })
+
+      useEditorStore.getState().copySelectedKeyframes()
+      useEditorStore.getState().pasteKeyframes()
+
+      const keyframes = useEditorStore.getState().keyframes
+      expect(keyframes).toHaveLength(2)
+      expect(keyframes[1].frame).toBe(30)
+    })
+
+    it('pasteKeyframes creates new ids for pasted keyframes', () => {
+      useEditorStore.setState({
+        keyframes: [createMockKeyframe({ id: 'kf-1', frame: 0 })],
+        selectedKeyframeIds: ['kf-1'],
+        currentFrame: 15,
+      })
+
+      useEditorStore.getState().copySelectedKeyframes()
+      useEditorStore.getState().pasteKeyframes()
+
+      const keyframes = useEditorStore.getState().keyframes
+      expect(keyframes[0].id).toBe('kf-1')
+      expect(keyframes[1].id).not.toBe('kf-1')
+    })
+
+    it('pasteKeyframes selects pasted keyframes', () => {
+      useEditorStore.setState({
+        keyframes: [createMockKeyframe({ id: 'kf-1', frame: 0 })],
+        selectedKeyframeIds: ['kf-1'],
+        currentFrame: 15,
+      })
+
+      useEditorStore.getState().copySelectedKeyframes()
+      useEditorStore.getState().pasteKeyframes()
+
+      const selected = useEditorStore.getState().selectedKeyframeIds
+      expect(selected).toHaveLength(1)
+      expect(selected[0]).not.toBe('kf-1')
+    })
+
+    it('pasteKeyframes can target a different object', () => {
+      useEditorStore.setState({
+        keyframes: [createMockKeyframe({ id: 'kf-1', frame: 0, objectId: 'obj-1' })],
+        selectedKeyframeIds: ['kf-1'],
+        currentFrame: 0,
+      })
+
+      useEditorStore.getState().copySelectedKeyframes()
+      useEditorStore.getState().pasteKeyframes('obj-2')
+
+      const keyframes = useEditorStore.getState().keyframes
+      expect(keyframes[1].objectId).toBe('obj-2')
+    })
+
+    it('pasteKeyframes does nothing with empty clipboard', () => {
+      useEditorStore.setState({
+        keyframes: [createMockKeyframe({ id: 'kf-1' })],
+        clipboard: null,
+        currentFrame: 15,
+      })
+
+      useEditorStore.getState().pasteKeyframes()
+
+      expect(useEditorStore.getState().keyframes).toHaveLength(1)
+    })
+
+    it('deleteSelectedKeyframes removes selected keyframes', () => {
+      useEditorStore.setState({
+        keyframes: [
+          createMockKeyframe({ id: 'kf-1' }),
+          createMockKeyframe({ id: 'kf-2' }),
+          createMockKeyframe({ id: 'kf-3' }),
+        ],
+        selectedKeyframeIds: ['kf-1', 'kf-3'],
+      })
+
+      useEditorStore.getState().deleteSelectedKeyframes()
+
+      const keyframes = useEditorStore.getState().keyframes
+      expect(keyframes).toHaveLength(1)
+      expect(keyframes[0].id).toBe('kf-2')
+    })
+
+    it('deleteSelectedKeyframes clears selection', () => {
+      useEditorStore.setState({
+        keyframes: [createMockKeyframe({ id: 'kf-1' })],
+        selectedKeyframeIds: ['kf-1'],
+      })
+
+      useEditorStore.getState().deleteSelectedKeyframes()
+
+      expect(useEditorStore.getState().selectedKeyframeIds).toEqual([])
     })
   })
 })
