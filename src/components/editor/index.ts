@@ -17,3 +17,4 @@ export {
   PreviewErrorBoundary,
   TimelineErrorBoundary,
 } from './ErrorBoundary'
+export { WelcomeModal, ShortcutPanel, TemplatePicker } from './modals'

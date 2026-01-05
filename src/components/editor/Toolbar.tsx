@@ -5,7 +5,7 @@ import { useEditorStore } from '@/store'
 import { useCanvasContext } from '@/contexts'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { MousePointer2, Square, Circle, Type, Upload } from 'lucide-react'
+import { MousePointer2, Square, Circle, Type, Upload, Keyboard } from 'lucide-react'
 import type { Tool } from '@/types'
 
 const tools: { id: Tool; icon: typeof MousePointer2; label: string }[] = [
@@ -15,7 +15,11 @@ const tools: { id: Tool; icon: typeof MousePointer2; label: string }[] = [
   { id: 'text', icon: Type, label: 'Text (T)' },
 ]
 
-export function Toolbar() {
+interface ToolbarProps {
+  onOpenShortcuts?: () => void
+}
+
+export function Toolbar({ onOpenShortcuts }: ToolbarProps) {
   const activeTool = useEditorStore((s) => s.activeTool)
   const setActiveTool = useEditorStore((s) => s.setActiveTool)
   const { importSVG } = useCanvasContext()
@@ -79,6 +83,22 @@ export function Toolbar() {
           </Tooltip>
         )
       })}
+
+      <div className="flex-1" />
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={onOpenShortcuts}
+            className="h-8 w-8 text-[#a1a1aa] hover:bg-[#262626] hover:text-[#fafafa]"
+          >
+            <Keyboard className="h-4 w-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">Keyboard Shortcuts (?)</TooltipContent>
+      </Tooltip>
     </div>
   )
 }
